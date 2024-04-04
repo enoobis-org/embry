@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase File Management</title>
+    <style>
+        body {
+            background-color: #0f0f0f;
+            color: #33ff33;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 24px;
+        }
+        input, button {
+            background-color: #1a1a1a;
+            border: 1px solid #33ff33;
+            color: #33ff33;
+            padding: 10px;
+            margin-top: 10px;
+        }
+        a {
+            color: #33ff33;
+            display: block;
+            margin: 5px 0;
+        }
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 20px;
+            }
+            input, button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Firebase File Management</h1>
+    <input id="fileInput" type="file">
+    <button id="uploadButton">Upload</button>
+    <div id="fileList"></div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.5.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.5.0/firebase-storage.js"></script>
+
+    <script>
+           const firebaseConfig = {
+            apiKey: "AIzaSyDDBAnwNwDq_3DbUmARTVQU8YoRsU3ni_w",
+            authDomain: "embry-aafdf.firebaseapp.com",
+            projectId: "embry-aafdf",
+            storageBucket: "embry-aafdf.appspot.com",
+            messagingSenderId: "360618469732",
+            appId: "1:360618469732:web:7a587c818150dc7d8af271"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+
+        const storageRef = firebase.storage().ref();
+
+        document.getElementById('uploadButton').addEventListener('click', function() {
+            const file = document.getElementById('fileInput').files[0];
+            const fileRef = storageRef.child(`images/${file.name}`);
+            
+            fileRef.put(file).then(function(snapshot) {
+                console.log('File uploaded successfully');
+                displayFileList();
+            }).catch(function(error) {
+                console.error('File upload error: ', error);
+            });
+        });
+
+        function displayFileList() {
+            const fileListDiv = document.getElementById('fileList');
+            fileListDiv.innerHTML = '';
+            storageRef.child('images').listAll().then(function(result) {
+                result.items.forEach(function(itemRef) {
+                    itemRef.getDownloadURL().then(function(url) {
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = itemRef.name;
+                        a.textContent = 'Download ' + itemRef.name;
+                        fileListDiv.appendChild(a);
+
+                        const deleteButton = document.createElement('button');
+                        deleteButton.textContent = 'Delete';
+                        deleteButton.onclick = function() {
+                            deleteFile(itemRef.name);
+                        };
+                        fileListDiv.appendChild(deleteButton);
+
+                        fileListDiv.appendChild(document.createElement('br'));
+                    });
+                });
+            }).catch(function(error) {
+                console.error('Error listing files: ', error);
+            });
+        }
+
+        function deleteFile(fileName) {
+            const fileRef = storageRef.child(`images/${fileName}`);
+            fileRef.delete().then(function() {
+                console.log('File successfully deleted');
+                displayFileList();
+            }).catch(function(error) {
+                console.error('File deletion error: ', error);
+            });
+        }
+
+        displayFileList();
+    </script>
+</body>
+</html>
