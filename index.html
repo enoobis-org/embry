@@ -9,24 +9,43 @@
             background-color: #0f0f0f;
             color: #33ff33;
             font-family: 'Courier New', Courier, monospace;
-            text-align: center; 
+            text-align: center;
             padding: 20px;
         }
         .container {
             display: inline-block;
-            text-align: left; 
+            text-align: left;
         }
         h1 {
             font-size: 24px;
         }
-        input, button {
+        .file-input-container {
             background-color: #1a1a1a;
             border: 1px solid #33ff33;
             color: #33ff33;
             padding: 10px;
-            margin: 5px 0; 
-            display: block; 
-            width: 100%; 
+            margin: 5px 0;
+            display: block;
+            cursor: pointer;
+            width: calc(100% - 22px);
+        }
+        .file-input-container:hover {
+            background-color: #262626;
+        }
+        input[type="file"] {
+            opacity: 0;
+            width: 0.1px;
+            height: 0.1px;
+            position: absolute;
+        }
+        button {
+            background-color: #1a1a1a;
+            border: 1px solid #33ff33;
+            color: #33ff33;
+            padding: 10px;
+            margin: 5px 0;
+            display: block;
+            width: 100%;
         }
         a {
             color: #33ff33;
@@ -43,12 +62,12 @@
 <body>
     <div class="container">
         <h1>/embry</h1>
+        <label for="fileInput" class="file-input-container">Choose file</label>
         <input id="fileInput" type="file">
         <button id="uploadButton">Upload</button>
         <div id="fileList"></div>
     </div>
 
-    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/8.5.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.5.0/firebase-storage.js"></script>
 
@@ -63,19 +82,22 @@
         };
 
         firebase.initializeApp(firebaseConfig);
-
         const storageRef = firebase.storage().ref();
 
         document.getElementById('uploadButton').addEventListener('click', function() {
             const file = document.getElementById('fileInput').files[0];
-            const fileRef = storageRef.child(`images/${file.name}`);
-            
-            fileRef.put(file).then(function(snapshot) {
-                console.log('File uploaded successfully');
-                displayFileList();
-            }).catch(function(error) {
-                console.error('File upload error: ', error);
-            });
+            if (file) { // Check if any file is selected
+                const fileRef = storageRef.child(`images/${file.name}`);
+                
+                fileRef.put(file).then(function(snapshot) {
+                    console.log('File uploaded successfully');
+                    displayFileList();
+                }).catch(function(error) {
+                    console.error('File upload error: ', error);
+                });
+            } else {
+                console.log('No file selected');
+            }
         });
 
         function displayFileList() {
